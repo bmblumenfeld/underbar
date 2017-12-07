@@ -74,7 +74,6 @@
         result = index;
       }
     });
-
     return result;
   };
 
@@ -91,20 +90,58 @@
 
   // Return all elements of an array that don't pass a truth test.
   _.reject = function(collection, test) {
-    // TIP: see if you can re-use _.filter() here, without simply
-    // copying code in and modifying it
+    var passed = _.filter(collection, function(x) {
+      return !test(x)
+    })
+    return passed
   };
 
   // Produce a duplicate-free version of the array.
   _.uniq = function(array, isSorted, iterator) {
+    var uniqueVals = []
+    var uniqueIteratedVals = []
+    if (isSorted !== undefined) {
+      _.each(array, function (element,index) {
+        if(element !== array[index+1]) {
+          uniqueVals.push(element)  
+        }
+      })
+    } else if (isSorted === undefined) {
+      _.each(array, function (element, index) {
+        var isUnique = false
+        for (var i = 0 ; i < array.length; i++) {
+          if(element !== uniqueVals[i]){
+            isUnique = true
+          } else {break}  
+        }
+        if (isUnique) {
+          uniqueVals.push(element)    
+        }
+      })
+    } else if (iterator!== undefined) {
+      _.each(uniqueVals, function (value) {
+        uniqueIteratedVals.push(iterator(value))
+      })
+      return uniqueIteratedVals
+    }
+    return uniqueVals
   };
 
 
   // Return the results of applying an iterator to each element.
   _.map = function(collection, iterator) {
-    // map() is a useful primitive iteration function that works a lot
-    // like each(), but in addition to running the operation on all
-    // the members, it also maintains an array of results.
+    var newCollection = []
+    if(Array.isArray(collection)) {
+      _.each(collection, function (element, index) {
+        newCollection.push(iterator(element,index))  
+      })
+    } else {
+       newCollection = {}
+       _.each(collection, function (value, key){
+         newCollection[key] = iterator(value)
+       })
+      }
+    return newCollection
   };
 
   /*
