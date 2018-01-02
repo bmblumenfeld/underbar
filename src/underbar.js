@@ -375,6 +375,16 @@
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
+    //
+    return _.map(collection, function(element) {
+      var method;
+      if (typeof(functionOrKey) === 'string') {
+        method = element[functionOrKey];
+      } else {
+        method = functionOrKey;
+      }
+      return method.apply(element, args);
+    });
   };
 
   // Sort the object's values by a criterion produced by an iterator.
@@ -382,6 +392,11 @@
   // of that string. For example, _.sortBy(people, 'name') should sort
   // an array of people by their name.
   _.sortBy = function(collection, iterator) {
+    if (typeof(iterator) === 'function') {
+      return collection.sort(function(a,b) {return iterator(a)-iterator(b)});
+    } else {
+      return collection.sort(function(a,b) {return a[iterator]-b[iterator]});
+    }
   };
 
   // Zip together two or more arrays with elements of the same index
@@ -390,6 +405,18 @@
   // Example:
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
   _.zip = function() {
+    var arrayToZip = arguments
+    var longestArray = arrayToZip.sort(function(a,b) {return b.length-a.length})[0].length;
+    var solution = [];
+    var resultsPrior = [];
+    for (var i=0; i<longestArray; i++) {
+      for (var j=0; j<arguments.length; j++) {
+        resultsPrior.push(arguments[j][i]);
+      }
+      solution.push(resultsPrior);
+      resultsPrior = [];
+    }
+    return solution;
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
@@ -397,16 +424,67 @@
   //
   // Hint: Use Array.isArray to check if something is an array
   _.flatten = function(nestedArray, result) {
+     var arrayToFlatten = [];   
+    var simplify = function(array) {
+      _.each(array, function(itemToSimplify) {
+        if (typeof(itemToSimplify) === 'number') {
+          arrayToFlatten.push(itemToSimplify);
+        } else {
+            simplify(itemToSimplify);
+        }
+      });
+    };
+
+    simplify(nestedArray);
+    return arrayToFlatten;
   };
 
   // Takes an arbitrary number of arrays and produces an array that contains
   // every item shared between all the passed-in arrays.
   _.intersection = function() {
+    var argumentsArray = Array.prototype.slice.call(arguments);
+
+    var result = [];
+
+    _.each(argumentsArray[0], function(item) {
+        var isShared = false;
+
+      for (var i=1; i<argumentsArray.length; i++) {
+        _.each(argumentsArray[i], function(check) {
+          if (item === check) {
+            isShared = true;
+          }
+        });
+      }
+
+      if (isShared) {
+        result.push(item);
+      }
+
+    });
+
+    return result;
   };
 
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
   _.difference = function(array) {
+        var argumentsArray = Array.prototype.slice.call(arguments);
+    var results = [];
+    _.each(array, function(element) {
+      var isUnique = true
+      for (var i=1; i<argumentsArray.length; i++) {
+        for (var j=0; j<argumentsArray[i].length; j++) {
+          if (element === argumentsArray[i][j]) {
+            isUnique = false;
+          }
+        }
+      }
+      if (isUnique) {
+        results.push(element);
+      }
+    });
+    return results;
   };
 
   // Returns a function, that, when invoked, will only be triggered at most once
